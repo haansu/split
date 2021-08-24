@@ -1,10 +1,9 @@
-from numpy.lib.shape_base import split
-import pygame as pg
-import numpy as np
-import copy
-from game import Game
-from colors import Color
-from tiles import Tile
+import	pygame 	as pg
+import	numpy 	as np
+import	copy
+from 	game 	import Game
+from 	colors 	import Color
+from 	tiles 	import Tile
 
 # Global Variables
 game 			= Game()
@@ -16,6 +15,9 @@ logic_width		= int(game.window.width / tile_prefab.width)
 logic_height 	= int(game.window.height / tile_prefab.height)
 logic_matrix 	= np.zeros_like([[Tile] * logic_height] * logic_width, dtype = None)
 # Why the fuck does python want me to declare a matrix like above??
+
+# Clock
+clock = pg.time.Clock()
 
 def main():
 	game.window.set_background(color.DARKER_PURPLE)
@@ -40,11 +42,18 @@ def main():
 
 	split_vertical = False
 	split_horizontal = False
+
+	# Defines skipped frames until new tile is drawn
+	skipper = 5
+	in_skipper = skipper
+
+	# Logic matrix inddices from mouse position
 	idx_x = 0
 	idx_y = 0
 
 	# Game loop
 	while game.running:
+		# Checking events
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				game.running = False
@@ -52,22 +61,26 @@ def main():
 				(pos_x, pos_y) = pg.mouse.get_pos()
 
 				# Transforms mouse position into logic matrix indices
-				idx_y = int(pos_y / tile_prefab.height)
-				idx_x = int(pos_x / tile_prefab.width)
+				if split_vertical == False and split_horizontal == False:
+					idx_y = int(pos_y / tile_prefab.height)
+					idx_x = int(pos_x / tile_prefab.width)
 
-				# Vertical split
-				if event.button == 1:
-					if logic_matrix[idx_x][idx_y].filled == False:
-						split_vertical = True
-						logic_matrix[idx_x][idx_y].filled = True
+					# Vertical split
+					if event.button == 1:
+						if logic_matrix[idx_x][idx_y].filled == False:
+							split_vertical = True
+							logic_matrix[idx_x][idx_y].filled = True
 
-				# Horizontal split split
-				if event.button == 3:
-					if logic_matrix[idx_x][idx_y].filled == False:
-						split_horizontal = True
-						logic_matrix[idx_x][idx_y].filled = True
+					# Horizontal split split
+					if event.button == 3:
+						if logic_matrix[idx_x][idx_y].filled == False:
+							split_horizontal = True
+							logic_matrix[idx_x][idx_y].filled = True
 
-		if split_vertical:
+		if split_vertical or split_horizontal:
+			skipper -= 1
+
+		if split_vertical and skipper == 1:
 			if idx_y + split_counter < logic_height - 1:
 				logic_matrix[idx_x][idx_y + split_counter].filled = True
 
@@ -79,8 +92,12 @@ def main():
 				split_vertical = False
 
 			split_counter += 1
+
+			if skipper == 1:
+				skipper = in_skipper
+
 		
-		if split_horizontal:
+		if split_horizontal and skipper == 1:
 			if idx_x + split_counter < logic_width - 1:
 				logic_matrix[idx_x + split_counter][idx_y].filled = True
 
@@ -93,12 +110,16 @@ def main():
 
 			split_counter += 1
 
+			if skipper == 1:
+				skipper = in_skipper
+
 		for array in logic_matrix:
 			for elem in array:
 				if elem.filled:
 					elem.draw(game.window.screen)
 
-		pg.display.flip()			
+		pg.display.flip()
+		clock.tick(60)
 
 if __name__ == '__main__':
 	pg.init()
