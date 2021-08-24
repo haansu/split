@@ -5,7 +5,7 @@ color = Color()
 
 class Tile:
 	def __init__(self):
-		(self.width, self.height) = (50, 50)
+		(self.width, self.height) = (25, 25)
 		self.x = 0
 		self.y = 0
 		self.color = color.WHITE
