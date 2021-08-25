@@ -20,6 +20,9 @@ class Window:
 	def set_background(self, color):
 		self.screen.fill(color)
 		pg.display.flip()
+
+	def fill(self, color):
+		self.screen.fill(color)
 		
 
 class Game:

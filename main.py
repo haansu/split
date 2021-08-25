@@ -4,10 +4,14 @@ import	copy
 from 	game 	import Game
 from 	colors 	import Color
 from 	tiles 	import Tile
+from	ball	import Ball
 
 # Global Variables
 game 			= Game()
 color 			= Color()
+ball			= Ball()
+velocity		= 3
+
 
 # Logic matrix
 tile_prefab 	= Tile()
@@ -17,15 +21,25 @@ logic_matrix 	= np.zeros_like([[Tile] * logic_height] * logic_width, dtype = Non
 # Why the fuck does python want me to declare a matrix like above??
 
 # Clock
-clock = pg.time.Clock()
+clock			= pg.time.Clock()
 
 def main():
 	game.window.set_background(color.DARKER_PURPLE)
 
+	# Ball configure
+	ball.x = game.window.width / 2
+	ball.y = game.window.height / 2
+
+
+	speed_x = 1
+	speed_y = 1
+	direction_x = speed_x * velocity
+	direction_y = speed_y * velocity
+
 	# Initialising the logic matrix
 	for i in range(logic_width):
 		for j in range(logic_height):
-			logic_matrix[i][j] = copy.deepcopy(tile_prefab)
+			logic_matrix[i][j]   = copy.deepcopy(tile_prefab)
 			logic_matrix[i][j].x = i * tile_prefab.width
 			logic_matrix[i][j].y = j * tile_prefab.height
 
@@ -40,8 +54,8 @@ def main():
 
 	split_counter = 1
 
-	split_vertical = False
-	split_horizontal = False
+	split_vertical		= False
+	split_horizontal	= False
 
 	# Defines skipped frames until new tile is drawn
 	skipper = 5
@@ -53,6 +67,7 @@ def main():
 
 	# Game loop
 	while game.running:
+		game.window.fill(color.DARKER_PURPLE)
 		# Checking events
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
@@ -118,6 +133,30 @@ def main():
 				if elem.filled:
 					elem.draw(game.window.screen)
 
+
+		# Ball logic
+		ball.x = ball.x + direction_x
+		ball.y = ball.y + direction_y
+		
+		ball_up		= ball.y - ball.rad
+		ball_down	= ball.y + ball.rad
+		ball_left	= ball.x - ball.rad
+		ball_right	= ball.x + ball.rad
+
+		if direction_x > 0 and logic_matrix[int(ball_right / tile_prefab.width)][int(ball.y / tile_prefab.height)].hovered(ball_right, ball.y) and logic_matrix[int(ball_right / tile_prefab.width)][int(ball.y / tile_prefab.height)].filled == True:
+			direction_x *= -1
+
+		if direction_x < 0 and logic_matrix[int(ball_left / tile_prefab.width)][int(ball.y / tile_prefab.height)].hovered(ball_left, ball.y) and logic_matrix[int(ball_left / tile_prefab.width)][int(ball.y / tile_prefab.height)].filled == True:
+			direction_x *= -1
+
+		if direction_y > 0 and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_down / tile_prefab.height)].hovered(ball.x, ball_down) and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_down / tile_prefab.height)].filled == True:
+			direction_y *= -1
+
+		if direction_y < 0 and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_up / tile_prefab.height)].hovered(ball.x, ball_up) and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_up / tile_prefab.height)].filled == True:
+			direction_y *= -1
+
+
+		ball.draw(game.window.screen)
 		pg.display.flip()
 		clock.tick(60)
 
