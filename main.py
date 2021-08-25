@@ -1,6 +1,8 @@
 import	pygame 	as pg
 import	numpy 	as np
 import	copy
+import	random
+import	math
 from 	game 	import Game
 from 	colors 	import Color
 from 	tiles 	import Tile
@@ -11,7 +13,6 @@ game 			= Game()
 color 			= Color()
 ball			= Ball()
 velocity		= 3
-
 
 # Logic matrix
 tile_prefab 	= Tile()
@@ -27,12 +28,14 @@ def main():
 	game.window.set_background(color.DARKER_PURPLE)
 
 	# Ball configure
-	ball.x = game.window.width / 2
-	ball.y = game.window.height / 2
+	ball.x		= game.window.width / 2
+	ball.y		= game.window.height / 2
 
+	# Setting direction to a random one
+	rand		= random.uniform(25.0, 75.0)
 
-	speed_x = 1
-	speed_y = 1
+	speed_x		= math.sin(np.radians(rand)) * random.choice([1, -1])
+	speed_y		= math.cos(np.radians(rand)) * random.choice([1, -1])
 	direction_x = speed_x * velocity
 	direction_y = speed_y * velocity
 
@@ -58,8 +61,8 @@ def main():
 	split_horizontal	= False
 
 	# Defines skipped frames until new tile is drawn
-	skipper = 5
-	in_skipper = skipper
+	skipper		= 5
+	in_skipper	= skipper
 
 	# Logic matrix inddices from mouse position
 	idx_x = 0
