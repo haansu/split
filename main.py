@@ -12,7 +12,7 @@ from	ball	import Ball
 game 			= Game()
 color 			= Color()
 ball			= Ball()
-velocity		= 3
+velocity		= 4
 
 # Logic matrix
 tile_prefab 	= Tile()
@@ -61,12 +61,19 @@ def main():
 	split_horizontal	= False
 
 	# Defines skipped frames until new tile is drawn
-	skipper		= 5
+	skipper		= 10
 	in_skipper	= skipper
 
 	# Logic matrix inddices from mouse position
 	idx_x = 0
 	idx_y = 0
+
+	max_x = 0
+	min_x = 0
+
+	max_y = 0
+	min_y = 0
+
 
 	# Game loop
 	while game.running:
@@ -101,13 +108,23 @@ def main():
 		if split_vertical and skipper == 1:
 			if idx_y + split_counter < logic_height - 1:
 				logic_matrix[idx_x][idx_y + split_counter].filled = True
+				max_y = idx_y + split_counter
 
 			if idx_y - split_counter > 0:
 				logic_matrix[idx_x][idx_y - split_counter].filled = True
-			
-			if split_counter + idx_y > logic_height - 1 and idx_y - split_counter <= 0:
+				min_y = idx_y - split_counter
+
+			if (max_y > logic_height - 1 or logic_matrix[idx_x][max_y + 1].filled == True) and (logic_matrix[idx_x][min_y - 1].filled == True or min_y - 1 <= 0):
 				split_counter = 0
 				split_vertical = False
+
+				# Fills inaccessable spaces considering ball's x position
+				for i in range(logic_width - 1):
+					for j in range(logic_height - 1):
+						if int(ball.x / tile_prefab.width) > idx_x and i < idx_x:
+							logic_matrix[i][j].filled = True
+						if int(ball.x / tile_prefab.width) < idx_x and i > idx_x:
+							logic_matrix[i][j].filled = True
 
 			split_counter += 1
 
@@ -118,13 +135,24 @@ def main():
 		if split_horizontal and skipper == 1:
 			if idx_x + split_counter < logic_width - 1:
 				logic_matrix[idx_x + split_counter][idx_y].filled = True
+				max_x = idx_x + split_counter
+
 
 			if idx_x - split_counter > 0:
 				logic_matrix[idx_x - split_counter][idx_y].filled = True
+				min_x = idx_x - split_counter
 
-			if split_counter + idx_x > logic_width - 1 and idx_x - split_counter <= 0:
+			if (max_x > logic_width - 1 or logic_matrix[max_x + 1][idx_y].filled == True) and (logic_matrix[min_x - 1][idx_y].filled == True or min_x - 1<= 0):
 				split_counter = 0
 				split_horizontal = False
+
+				# Fills inaccessable spaces considering ball's y position
+				for i in range(logic_width - 1):
+					for j in range(logic_height - 1):
+						if int(ball.y / tile_prefab.height) > idx_y and j < idx_y:
+							logic_matrix[i][j].filled = True
+						if int(ball.y / tile_prefab.height) < idx_y and j > idx_y:
+							logic_matrix[i][j].filled = True
 
 			split_counter += 1
 
