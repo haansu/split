@@ -10,6 +10,7 @@ class Tile:
 		self.y = 0
 		self.color = color.WHITE
 		self.filled = False
+		self.constr = False
 
 	def draw(self, surface):
 		pg.draw.rect(surface, self.color, pg.Rect(self.x, self.y, self.width, self.height))

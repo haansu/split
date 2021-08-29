@@ -26,7 +26,7 @@ clock			= pg.time.Clock()
 
 def main():
 	game.window.set_background(color.DARKER_PURPLE)
-
+	
 	# Ball configure
 	ball.x		= game.window.width / 2
 	ball.y		= game.window.height / 2
@@ -74,10 +74,10 @@ def main():
 	max_y = 0
 	min_y = 0
 
-
 	# Game loop
 	while game.running:
 		game.window.fill(color.DARKER_PURPLE)
+		
 		# Checking events
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
@@ -95,12 +95,14 @@ def main():
 						if logic_matrix[idx_x][idx_y].filled == False:
 							split_vertical = True
 							logic_matrix[idx_x][idx_y].filled = True
+							logic_matrix[idx_x][idx_y].constr = True
 
 					# Horizontal split split
 					if event.button == 3:
 						if logic_matrix[idx_x][idx_y].filled == False:
 							split_horizontal = True
 							logic_matrix[idx_x][idx_y].filled = True
+							logic_matrix[idx_x][idx_y].constr = True
 
 		if split_vertical or split_horizontal:
 			skipper -= 1
@@ -108,10 +110,12 @@ def main():
 		if split_vertical and skipper == 1:
 			if idx_y + split_counter < logic_height - 1:
 				logic_matrix[idx_x][idx_y + split_counter].filled = True
+				logic_matrix[idx_x][idx_y + split_counter].constr = True
 				max_y = idx_y + split_counter
 
 			if idx_y - split_counter > 0:
 				logic_matrix[idx_x][idx_y - split_counter].filled = True
+				logic_matrix[idx_x][idx_y - split_counter].constr = True
 				min_y = idx_y - split_counter
 
 			if (max_y > logic_height - 1 or logic_matrix[idx_x][max_y + 1].filled == True) and (logic_matrix[idx_x][min_y - 1].filled == True or min_y - 1 <= 0):
@@ -126,6 +130,9 @@ def main():
 						if int(ball.x / tile_prefab.width) < idx_x and i > idx_x:
 							logic_matrix[i][j].filled = True
 
+				for i in range(logic_height - 1):
+					logic_matrix[idx_x][i].constr = False
+
 			split_counter += 1
 
 			if skipper == 1:
@@ -135,11 +142,12 @@ def main():
 		if split_horizontal and skipper == 1:
 			if idx_x + split_counter < logic_width - 1:
 				logic_matrix[idx_x + split_counter][idx_y].filled = True
+				logic_matrix[idx_x + split_counter][idx_y].constr = True
 				max_x = idx_x + split_counter
-
 
 			if idx_x - split_counter > 0:
 				logic_matrix[idx_x - split_counter][idx_y].filled = True
+				logic_matrix[idx_x - split_counter][idx_y].constr = True
 				min_x = idx_x - split_counter
 
 			if (max_x > logic_width - 1 or logic_matrix[max_x + 1][idx_y].filled == True) and (logic_matrix[min_x - 1][idx_y].filled == True or min_x - 1<= 0):
@@ -154,6 +162,9 @@ def main():
 						if int(ball.y / tile_prefab.height) < idx_y and j > idx_y:
 							logic_matrix[i][j].filled = True
 
+				for i in range(logic_width - 1):
+					logic_matrix[i][idx_y].constr = False
+
 			split_counter += 1
 
 			if skipper == 1:
@@ -163,7 +174,6 @@ def main():
 			for elem in array:
 				if elem.filled:
 					elem.draw(game.window.screen)
-
 
 		# Ball logic
 		ball.x = ball.x + direction_x
@@ -176,16 +186,24 @@ def main():
 
 		if direction_x > 0 and logic_matrix[int(ball_right / tile_prefab.width)][int(ball.y / tile_prefab.height)].hovered(ball_right, ball.y) and logic_matrix[int(ball_right / tile_prefab.width)][int(ball.y / tile_prefab.height)].filled == True:
 			direction_x *= -1
+			if logic_matrix[int(ball_right / tile_prefab.width)][int(ball.y / tile_prefab.height)].constr == True:
+				print("LOSS")
+
 
 		if direction_x < 0 and logic_matrix[int(ball_left / tile_prefab.width)][int(ball.y / tile_prefab.height)].hovered(ball_left, ball.y) and logic_matrix[int(ball_left / tile_prefab.width)][int(ball.y / tile_prefab.height)].filled == True:
 			direction_x *= -1
+			if logic_matrix[int(ball_left / tile_prefab.width)][int(ball.y / tile_prefab.height)].constr == True:
+				print("LOSS")
 
 		if direction_y > 0 and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_down / tile_prefab.height)].hovered(ball.x, ball_down) and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_down / tile_prefab.height)].filled == True:
 			direction_y *= -1
+			if logic_matrix[int(ball.x / tile_prefab.width)][int(ball_down / tile_prefab.height)].constr == True:
+				print("LOSS")
 
 		if direction_y < 0 and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_up / tile_prefab.height)].hovered(ball.x, ball_up) and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_up / tile_prefab.height)].filled == True:
 			direction_y *= -1
-
+			if logic_matrix[int(ball.x / tile_prefab.width)][int(ball_up / tile_prefab.height)].constr == True:
+				print("LOSS")
 
 		ball.draw(game.window.screen)
 		pg.display.flip()
