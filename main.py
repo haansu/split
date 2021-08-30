@@ -24,12 +24,16 @@ logic_matrix 	= np.zeros_like([[Tile] * logic_height] * logic_width, dtype = Non
 # Clock
 clock			= pg.time.Clock()
 
+# Images
+background		= pg.image.load("img/bg2.png");
+
 def main():
 	game.window.set_background(color.DARKER_PURPLE)
 	
 	# Ball configure
 	ball.x		= game.window.width / 2
 	ball.y		= game.window.height / 2
+	ball.color	= color.BLUE
 
 	# Setting direction to a random one
 	rand		= random.uniform(25.0, 75.0)
@@ -45,6 +49,7 @@ def main():
 			logic_matrix[i][j]   = copy.deepcopy(tile_prefab)
 			logic_matrix[i][j].x = i * tile_prefab.width
 			logic_matrix[i][j].y = j * tile_prefab.height
+			logic_matrix[i][j].color = int(random.uniform(200, 255))
 
 	# Setting default drawn tiles
 	for i in range(logic_width):
@@ -76,8 +81,10 @@ def main():
 
 	# Game loop
 	while game.running:
-		game.window.fill(color.DARKER_PURPLE)
+		#game.window.fill(color.DARKER_PURPLE)
 		
+		game.window.screen.blit(pg.transform.scale(background, (1000, 500)), (0, 0))
+
 		# Checking events
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
