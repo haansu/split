@@ -33,6 +33,7 @@ class Game:
 
 	def __init__(self):
 		self.running = True
+		self.end = True
 		self.window = Window()
 		
 		

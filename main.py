@@ -12,7 +12,12 @@ from	ball	import Ball
 game 			= Game()
 color 			= Color()
 ball			= Ball()
-velocity		= 4
+won				= False
+
+# Changable parameters
+velocity		= 6
+win_fill_prc	= 85
+skipped_frames	= 10
 
 # Logic matrix
 tile_prefab 	= Tile()
@@ -25,7 +30,19 @@ logic_matrix 	= np.zeros_like([[Tile] * logic_height] * logic_width, dtype = Non
 clock			= pg.time.Clock()
 
 # Images
-background		= pg.image.load("img/bg2.png");
+background		= pg.image.load("img/bg.png");
+
+
+def loss():
+	global won
+	won = False
+	game.running = False
+
+def won():
+	global won
+	won = True
+	game.running = False
+
 
 def main():
 	game.window.set_background(color.DARKER_PURPLE)
@@ -66,7 +83,7 @@ def main():
 	split_horizontal	= False
 
 	# Defines skipped frames until new tile is drawn
-	skipper		= 10
+	skipper		= skipped_frames
 	in_skipper	= skipper
 
 	# Logic matrix inddices from mouse position
@@ -89,6 +106,7 @@ def main():
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				game.running = False
+				game.end = False
 			if event.type == pg.MOUSEBUTTONUP:
 				(pos_x, pos_y) = pg.mouse.get_pos()
 
@@ -191,30 +209,60 @@ def main():
 		ball_left	= ball.x - ball.rad
 		ball_right	= ball.x + ball.rad
 
+		# Colision & loss condition
 		if direction_x > 0 and logic_matrix[int(ball_right / tile_prefab.width)][int(ball.y / tile_prefab.height)].hovered(ball_right, ball.y) and logic_matrix[int(ball_right / tile_prefab.width)][int(ball.y / tile_prefab.height)].filled == True:
 			direction_x *= -1
 			if logic_matrix[int(ball_right / tile_prefab.width)][int(ball.y / tile_prefab.height)].constr == True:
-				print("LOSS")
+				loss()
 
 
 		if direction_x < 0 and logic_matrix[int(ball_left / tile_prefab.width)][int(ball.y / tile_prefab.height)].hovered(ball_left, ball.y) and logic_matrix[int(ball_left / tile_prefab.width)][int(ball.y / tile_prefab.height)].filled == True:
 			direction_x *= -1
 			if logic_matrix[int(ball_left / tile_prefab.width)][int(ball.y / tile_prefab.height)].constr == True:
-				print("LOSS")
+				loss()
 
 		if direction_y > 0 and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_down / tile_prefab.height)].hovered(ball.x, ball_down) and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_down / tile_prefab.height)].filled == True:
 			direction_y *= -1
 			if logic_matrix[int(ball.x / tile_prefab.width)][int(ball_down / tile_prefab.height)].constr == True:
-				print("LOSS")
+				loss()
 
 		if direction_y < 0 and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_up / tile_prefab.height)].hovered(ball.x, ball_up) and logic_matrix[int(ball.x / tile_prefab.width)][int(ball_up / tile_prefab.height)].filled == True:
 			direction_y *= -1
 			if logic_matrix[int(ball.x / tile_prefab.width)][int(ball_up / tile_prefab.height)].constr == True:
-				print("LOSS")
+				loss()
+
+
+		# Win condition
+		counter = 0
+		for array in logic_matrix:
+			for elem in array:
+				if elem.filled == True and elem.constr == False:
+					counter += 1
+
+		if counter / (logic_width * logic_height) * 100 > win_fill_prc:
+			won()
 
 		ball.draw(game.window.screen)
 		pg.display.flip()
 		clock.tick(60)
+	
+	font = pg.font.Font('fonts/dogica.ttf', 60)
+	text = font.render("-", False, color.WHITE)
+
+	while game.end == True:
+		game.window.screen.blit(pg.transform.scale(background, (1000, 500)), (0, 0))
+		for event in pg.event.get():
+			if event.type == pg.QUIT:
+				game.end = False
+		
+		if won:
+			text = font.render("You won", False, color.WHITE)
+		else:
+			text = font.render("You lost", False, color.WHITE)
+		game.window.screen.blit(text,(300, 200))
+		pg.display.flip()
+		
+
 
 if __name__ == '__main__':
 	pg.init()
